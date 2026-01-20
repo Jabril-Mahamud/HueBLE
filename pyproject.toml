@@ -35,6 +35,7 @@ dev = [
 
 [project.scripts]
 hue-ble = "hue_ble_controller.gui:main"
+hue-ble-cli = "hue_ble_controller.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/yourusername/hue-ble-controller"

@@ -1,2 +1,6 @@
-/.env
-src/hue_ble_controller/__pycache__
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
