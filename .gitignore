@@ -1,1 +1,6 @@
 /.env
+src/hue_ble_controller/__pycache__
+.venv
+src/hue_ble_controller/__pycache__/*
+src/hue_ble_controller/__pycache__/controller.cpython-313.pyc
+src/hue_ble_controller/__pycache__/gui.cpython-313.pyc

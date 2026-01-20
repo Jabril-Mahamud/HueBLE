@@ -1,10 +1,14 @@
 import asyncio
+import threading
 import tkinter as tk
 from tkinter import colorchooser
 from typing import Callable
 
 from .controller import (
     get_light,
+    sunrise,
+    sundown,
+    flash,
     COLOURS,
 )
 
@@ -50,7 +54,7 @@ class HueControllerGUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Hue BLE Controller")
-        self.root.geometry("300x500")
+        self.root.geometry("300x580")
         self.root.resizable(False, False)
 
         self.light = None
@@ -134,6 +138,30 @@ class HueControllerGUI:
         )
         self.temp_slider.pack(fill="x")
 
+        # Effects frame
+        effects_frame = tk.LabelFrame(self.root, text="Effects", padx=10, pady=10)
+        effects_frame.pack(fill="x", padx=10, pady=5)
+
+        effects_btn_frame = tk.Frame(effects_frame)
+        effects_btn_frame.pack()
+
+        self.sunrise_btn = tk.Button(effects_btn_frame, text="Sunrise", width=8, command=self._start_sunrise)
+        self.sunrise_btn.pack(side="left", padx=5)
+
+        self.sundown_btn = tk.Button(effects_btn_frame, text="Sundown", width=8, command=self._start_sundown)
+        self.sundown_btn.pack(side="left", padx=5)
+
+        self.flash_btn = tk.Button(effects_btn_frame, text="Flash", width=8, command=self._start_flash)
+        self.flash_btn.pack(side="left", padx=5)
+
+        # Duration frame
+        duration_frame = tk.Frame(effects_frame)
+        duration_frame.pack(pady=(10, 0))
+        tk.Label(duration_frame, text="Duration (min):").pack(side="left")
+        self.duration_var = tk.IntVar(value=1)
+        self.duration_spinbox = tk.Spinbox(duration_frame, from_=1, to=60, width=5, textvariable=self.duration_var)
+        self.duration_spinbox.pack(side="left", padx=5)
+
     def _connect(self):
         try:
             self.light = run_async(get_light())
@@ -174,6 +202,35 @@ class HueControllerGUI:
                 r, g, b = [int(c) for c in colour[0]]
                 x, y = rgb_to_xy(r, g, b)
                 run_async(self.light.set_colour_xy(x, y))
+
+    def _run_effect_in_thread(self, coro, btn):
+        """Run an effect in a background thread to avoid blocking the GUI."""
+        def run():
+            btn.config(state="disabled")
+            try:
+                loop = asyncio.new_event_loop()
+                loop.run_until_complete(coro)
+                loop.close()
+            finally:
+                self.root.after(0, lambda: btn.config(state="normal"))
+
+        thread = threading.Thread(target=run, daemon=True)
+        thread.start()
+
+    def _start_sunrise(self):
+        if self._ensure_connected():
+            duration = self.duration_var.get()
+            self._run_effect_in_thread(sunrise(duration), self.sunrise_btn)
+
+    def _start_sundown(self):
+        if self._ensure_connected():
+            duration = self.duration_var.get()
+            self._run_effect_in_thread(sundown(duration), self.sundown_btn)
+
+    def _start_flash(self):
+        if self._ensure_connected():
+            duration = self.duration_var.get()
+            self._run_effect_in_thread(flash(duration_minutes=duration), self.flash_btn)
 
     def run(self):
         self.root.mainloop()

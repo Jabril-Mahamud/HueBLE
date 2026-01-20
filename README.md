@@ -49,16 +49,18 @@ async def scan():
 asyncio.run(scan())
 ```
 
-### 2. Set the environment variable
+### 2. Set the MAC address
 
-```bash
-export HUE_MAC_ADDRESS="XX:XX:XX:XX:XX:XX"
-```
-
-Or create a `.env` file:
+Create a `.env` file in your project directory:
 
 ```sh
 HUE_MAC_ADDRESS=XX:XX:XX:XX:XX:XX
+```
+
+Or export it directly:
+
+```bash
+export HUE_MAC_ADDRESS="XX:XX:XX:XX:XX:XX"
 ```
 
 ## Usage
@@ -69,11 +71,42 @@ HUE_MAC_ADDRESS=XX:XX:XX:XX:XX:XX
 hue-ble
 ```
 
+### CLI
+
+```bash
+# Turn on/off
+hue-ble-cli on
+hue-ble-cli on --brightness 150
+hue-ble-cli off
+
+# Sunrise simulation (fade in from warm to cool)
+hue-ble-cli sunrise
+hue-ble-cli sunrise --duration 15
+
+# Sundown simulation (fade out from cool to warm)
+hue-ble-cli sundown
+hue-ble-cli sundown --duration 15
+
+# Flash
+hue-ble-cli flash
+hue-ble-cli flash --duration 2 --interval 0.5
+
+# Colour presets
+hue-ble-cli preset purple
+hue-ble-cli preset warm_white
+
+# Set brightness
+hue-ble-cli brightness 200
+```
+
 ### Python API
 
 ```python
 import asyncio
-from hue_ble_controller import turn_on, turn_off, set_colour_preset, set_brightness
+from hue_ble_controller import (
+    turn_on, turn_off, set_colour_preset, set_brightness,
+    sunrise, sundown, flash
+)
 
 # Turn on with max brightness
 asyncio.run(turn_on(brightness=254))
@@ -88,6 +121,15 @@ asyncio.run(set_colour_xy(0.3, 0.3))
 # Set colour temperature (153=cool, 500=warm)
 from hue_ble_controller import set_colour_temp
 asyncio.run(set_colour_temp(300))
+
+# Sunrise simulation (15 minute fade in)
+asyncio.run(sunrise(duration_minutes=15))
+
+# Sundown simulation (15 minute fade out)
+asyncio.run(sundown(duration_minutes=15))
+
+# Flash for 1 minute
+asyncio.run(flash(duration_minutes=1, interval=0.5))
 
 # Turn off
 asyncio.run(turn_off())
@@ -107,18 +149,18 @@ asyncio.run(turn_off())
 
 ## Run at startup (Linux)
 
-Create a systemd service at `~/.config/systemd/user/hue-startup.service`:
+Create a systemd service at `~/.config/systemd/user/hue-sunrise.service`:
 
 ```ini
 [Unit]
-Description=Turn on Hue light at startup
+Description=Hue sunrise light fade
 After=bluetooth.target
 
 [Service]
-Type=oneshot
+Type=simple
 Environment="HUE_MAC_ADDRESS=XX:XX:XX:XX:XX:XX"
-ExecStart=/usr/bin/python3 -c "import asyncio; from hue_ble_controller import turn_on; asyncio.run(turn_on())"
-ExecStartPost=/bin/sleep 2
+ExecStart=/home/YOUR_USER/.local/bin/hue-ble-cli sunrise --duration 15
+Restart=no
 
 [Install]
 WantedBy=default.target
@@ -128,7 +170,13 @@ Enable it:
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable hue-startup.service
+systemctl --user enable hue-sunrise.service
+```
+
+Test it manually:
+
+```bash
+systemctl --user start hue-sunrise.service
 ```
 
 ## Troubleshooting
