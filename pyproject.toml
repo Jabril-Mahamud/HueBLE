@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hue-ble-controller"
+version = "0.1.0"
+description = "Control Philips Hue Bluetooth lights without a bridge"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+keywords = ["philips", "hue", "bluetooth", "ble", "smart-home"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Home Automation",
+]
+dependencies = [
+    "bleak>=0.19.0",
+    "HueBLE>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+hue-ble = "hue_ble_controller.gui:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/hue-ble-controller"
+Repository = "https://github.com/yourusername/hue-ble-controller"
+Issues = "https://github.com/yourusername/hue-ble-controller/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hue_ble_controller"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
