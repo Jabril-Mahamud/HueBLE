@@ -27,7 +27,7 @@ pip install hue-ble-controller
 Or install from source:
 
 ```bash
-git clone https://github.com/yourusername/hue-ble-controller.git
+git clone https://github.com/Jabril-Mahamud/hue-ble-controller.git
 cd hue-ble-controller
 pip install -e .
 ```
